@@ -5,6 +5,73 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css">
 
+<!-- Custom CSS -->
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+    }
+
+    .content {
+        background: linear-gradient(135deg,rgb(255, 255, 255),rgb(255, 255, 255));
+    }
+
+    .container {
+        max-width: 1200px;
+    }
+
+    .bg-white {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-gray-700 {
+        color: #4a4a4a;
+    }
+
+    .text-gray-600 {
+        color: #6b7280;
+    }
+
+    .rounded {
+        border-radius: 8px;
+    }
+
+    .hover\:bg-green-600:hover {
+        background-color: #2d6a4f;
+    }
+
+    .table th {
+        background-color: #4caf50;
+        color: white;
+        font-weight: bold;
+    }
+
+    .table td {
+        color: #333;
+    }
+
+    #patients-table_filter input {
+        border: 2px solid #4caf50;
+        border-radius: 5px;
+        padding: 5px 10px;
+    }
+
+    #patients-table_wrapper .dt-buttons button {
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        margin-right: 5px;
+        cursor: pointer;
+    }
+
+    #patients-table_wrapper .dt-buttons button:hover {
+        background-color: #388e3c;
+    }
+</style>
+
 <div class="content p-6 bg-gray-100 min-h-screen">
     <section class="mb-6">
         <div class="container mx-auto">
@@ -19,12 +86,12 @@
         <div class="container mx-auto">
             <div class="bg-white p-6 rounded shadow">
                 <h2 class="text-lg font-semibold text-gray-600 mb-4">Patients List</h2>
-                <table id="patients-table" class="min-w-full bg-white border border-gray-300">
+                <table id="patients-table" class="min-w-full bg-white border border-gray-300 table">
                     <thead>
                         <tr>
-                            <th class="py-2 px-4 text-left text-sm font-medium text-gray-700 border-b border-gray-300">Full Name</th>
-                            <th class="py-2 px-4 text-left text-sm font-medium text-gray-700 border-b border-gray-300">Email</th>
-                            <th class="py-2 px-4 text-left text-sm font-medium text-gray-700 border-b border-gray-300">Actions</th>
+                            <th class="py-4 px-6 text-left text-sm font-bold border-b border-gray-300 bg-green-500 text-white">Full Name</th>
+                            <th class="py-4 px-6 text-left text-sm font-bold border-b border-gray-300 bg-green-500 text-white">Email</th>
+                            <th class="py-4 px-6 text-left text-sm font-bold border-b border-gray-300 bg-green-500 text-white">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -34,6 +101,29 @@
             </div>
         </div>
     </section>
+
+    <style>
+        #patients-table tbody tr:hover {
+            background-color: #f1f5f9; /* Light gray background on hover */
+            transition: background-color 0.3s ease;
+        }
+
+        #patients-table tbody tr:hover td {
+            color: #2d6a4f; /* Vibrant green text on hover */
+            font-weight: bold;
+        }
+
+        #patients-table th {
+            background-color: #14B8A6;
+            color: white;
+            font-weight: bold;
+        }
+
+        #patients-table td {
+            color: #333;
+            padding: 10px;
+        }
+    </style>
 </div>
 
 <!-- Add jQuery and DataTables JS -->
@@ -64,7 +154,38 @@
             "destroy": true,
             "dom": '<"top"lfB>rt<"bottom"ip><"clear">', // Add export buttons to "top"
             "buttons": [
-                'copy', 'csv', 'excel', 'pdf', 'print'
+                {
+                    extend: 'collection',
+                    text: 'Export Options',
+                    className: 'btn btn-success', // Custom class for styling
+                    buttons: [
+                        {
+                            extend: 'copy',
+                            text: 'Copy to Clipboard',
+                            className: 'btn btn-light'
+                        },
+                        {
+                            extend: 'csv',
+                            text: 'Export as CSV',
+                            className: 'btn btn-light'
+                        },
+                        {
+                            extend: 'excel',
+                            text: 'Export as Excel',
+                            className: 'btn btn-light'
+                        },
+                        {
+                            extend: 'pdf',
+                            text: 'Export as PDF',
+                            className: 'btn btn-light'
+                        },
+                        {
+                            extend: 'print',
+                            text: 'Print Table',
+                            className: 'btn btn-light'
+                        }
+                    ]
+                }
             ],
             "renderer": "semanticUI"
         }).buttons().container().appendTo('#patients-table_wrapper .col-md-6:eq(0)');

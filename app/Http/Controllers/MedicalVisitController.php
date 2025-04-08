@@ -125,27 +125,54 @@ class MedicalVisitController extends Controller
         return redirect()->route('medical_visit.show', $visit->id)->with('success', 'Medical visit updated successfully.');
     }
 
+
     public function approve(Request $request, $id)
-    {
-        $visit = MedicalVisit::findOrFail($id);
-        $visit->is_approved = 'Approved';
-        $visit->time_slot = $request->input('time_slot');
-        $visit->doctor_id = $request->input('doctor_id');
-        $visit->nurse_id = $request->input('nurse_id');
-        $visit->visit_date = Carbon::parse($request->input('visit_date'))->format('Y-m-d H:i:s');
-        $visit->save();
+{
+    $validatedData = $request->validate([
+        'visit_date' => 'required|date',
+        'time_slot' => 'required',
+        'doctor_id' => 'required|exists:users,id',
+        'nurse_id' => 'required|exists:users,id',
+    ]);
 
-        // Send visit schedule mail
-        Mail::to($visit->patient->email)->send(new VisitScheduleMail($visit));
+    $visitDate = Carbon::parse($request->input('visit_date'))->format('Y-m-d');
+    $timeSlot = $request->input('time_slot');
+    $doctorId = $request->input('doctor_id');
+    $nurseId = $request->input('nurse_id');
 
-        AuditLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'approve',
-            'description' => 'Approved medical visit (ID: ' . $visit->id . ') for patient: ' . $visit->patient->full_name . ' (ID: ' . $visit->patient->id . ') on ' . $visit->visit_date . ' at ' . $visit->time_slot,
-        ]);
+    // Check if a record exists where both the same doctor and nurse are scheduled for the same date & time
+    $conflict = MedicalVisit::where('visit_date', $visitDate)
+        ->where('time_slot', $timeSlot)
+        ->where('doctor_id', $doctorId)
+        ->where('nurse_id', $nurseId)
+        ->exists();
 
-        return redirect()->route('medical_visit.index')->with('success', 'Medical visit approved successfully.');
+    if ($conflict) {
+        return redirect()->back()->with('error', 'The selected doctor and nurse are already assigned together for a visit at this time slot on this date.');
     }
+
+    // If no conflicts, approve the visit
+    $medicalVisit = MedicalVisit::findOrFail($id);
+    $medicalVisit->is_approved = $medicalVisit->is_emergency ? 'Emergency Approved' : 'Approved';
+    $medicalVisit->visit_date = $visitDate;
+    $medicalVisit->time_slot = $timeSlot;
+    $medicalVisit->doctor_id = $doctorId;
+    $medicalVisit->nurse_id = $nurseId;
+    $medicalVisit->save();
+
+    Mail::to($medicalVisit->patient->email)->send(new VisitScheduleMail($medicalVisit));
+
+
+    // Log the approval action
+    AuditLog::create([
+        'user_id' => Auth::id(),
+        'action' => 'approve',
+        'description' => 'Approved medical visit for patient: ' . $medicalVisit->patient->full_name,
+    ]);
+
+    return redirect()->route('request_for_visit.index')->with('success', 'Medical visit approved successfully.');
+}
+
     public function updateStatus(Request $request, $id)
     {
         $visit = MedicalVisit::findOrFail($id);
@@ -186,7 +213,8 @@ class MedicalVisitController extends Controller
         $events = $medicalVisits->map(function ($visit) {
             return [
                 'id' => $visit->id,
-                'title' => $visit->patient->full_name . ' - ' . $visit->patient->full_address,
+                'title' => $visit->patient->full_name,
+                // 'title' => $visit->patient->full_name . ' - ' . $visit->patient->full_address
                 'start' => $visit->visit_date ?? $visit->preferred_visit_date,
                 'status' => $visit->is_approved,
                 'backgroundColor' => $visit->is_approved === 'Approved' ? 'green' : ($visit->is_approved === 'pending' ? 'orange' : 'yellow'),
@@ -215,11 +243,19 @@ class MedicalVisitController extends Controller
             'description' => 'Rescheduled medical visit (ID: ' . $visit->id . ') for patient: ' . $visit->patient->full_name . ' (ID: ' . $visit->patient->id . ') to ' . $visit->visit_date . ' at ' . $visit->time_slot,
         ]);
 
+         // Check if the request is AJAX
+    if ($request->ajax()) {
         return response()->json([
             'success' => true,
-            'new_date' => $visit->visit_date,
-            'new_time' => $visit->time_slot,
+            'message' => 'Visit rescheduled successfully.',
+            'visit_date' => $visit->visit_date,
+            'time_slot' => $visit->time_slot,
+            'redirect' => route('medical_visit.index'),
         ]);
+    }
+
+    // If normal form submission
+    return redirect()->route('medical_visit.index')->with('success', 'Medical visit rescheduled successfully.');
     }
 
     public function getVisitDetails($id)
@@ -232,7 +268,6 @@ class MedicalVisitController extends Controller
     {
         $query = MedicalVisit::with(['patient', 'doctor', 'nurse'])
             ->select('medical_visits.*'); // Ensure the table name is correct
-
         return DataTables::eloquent($query)
             ->addColumn('action', function ($visit) {
                 return view('medical_visit.action', compact('visit'))->render();

@@ -1,13 +1,102 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="content">
+<div class="content" style="padding-bottom: 20px;">
+    <style>
+        /* Vibrant and modern styles */
+        body {
+            background-color: #f4f6f9;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #ffffff, #f9f9f9);
+        }
+
+        .card-header {
+            background-color: #14B8A6;
+            color: #fff;
+            border-radius: 15px 15px 0 0;
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-control {
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #0056b3, #003f7f);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        textarea.form-control {
+            resize: none;
+        }
+
+        select.form-control {
+            background-color: #f9f9f9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .content-header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .form-group input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 10px;
+        }
+
+        .content {
+            padding-bottom: 20px; /* Added bottom padding */
+        }
+    </style>
+
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Add Patient</h1>
+                    <h1 style="font-size: 32px; font-weight: bold; color: #14B8A6; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);">
+                        Add Patient
+                    </h1>
                 </div>
             </div>
         </div><!-- /.container-fluid -->
@@ -20,7 +109,7 @@
                 <div class="col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Patient Information</h3>
+                            Patient Information
                         </div>
                         <div class="card-body">
                             <form id="patientForm" action="{{ route('admin.patient.store') }}" method="POST">
@@ -37,8 +126,6 @@
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
-                                
-
                                 <div class="form-group">
                                     <label for="date_of_birth">Date of Birth</label>
                                     <input type="date" name="date_of_birth" class="form-control" required>
@@ -75,13 +162,13 @@
                                         <option value="Hindu">Hindu</option>
                                         <option value="Maksad">Maksad</option>
                                         <option value="Chamar">Chamar</option>
-                                    </select>                                </div>
+                                    </select>
+                                </div>
                                 <div class="form-group">
                                     <label for="economic_status">Economic Status</label>
                                     <select name="economic_status" class="form-control" required>
                                         <option value="Poor">Poor</option>
                                         <option value="Lower Middle">Lower Middle</option>
-                                        <!-- Add other economic statuses as needed -->
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -113,13 +200,8 @@
                                     <select name="emergency_contact_relationship" class="form-control" required>
                                         <option value="Son">Son</option>
                                         <option value="Daughter">Daughter</option>
-                                        <!-- Add other relationships as needed -->
                                     </select>
                                 </div>
-                                <!-- <div class="form-group">
-                                    <label for="password">Password</label>
-                                    <input type="password" name="password" class="form-control" >
-                                </div> -->
                                 <input type="hidden" name="full_name" id="full_name">
                                 <button type="submit" class="btn btn-primary">Save</button>
                             </form>

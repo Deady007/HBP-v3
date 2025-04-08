@@ -11,8 +11,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Add this import
 use Illuminate\Support\Facades\Log; // Add this import
 use Illuminate\Support\Facades\Auth; // Add this import
+use Illuminate\Support\Facades\Mail; // Add this import
 use App\DataTables\PatientDataTable; // Add this import
 use Yajra\DataTables\Facades\DataTables; // Add this import
+
 
 class PatientController extends Controller
 {         
@@ -61,25 +63,37 @@ class PatientController extends Controller
         $data = $request->all();
         $data['full_name'] = $request->input('Full_name');
         $user = Auth::user();
+
         if ($user) {
-            $data['user_unique_id'] = $user->id; // Fetch the id field from the User table
-            
+            $data['user_unique_id'] = $user->id;
+
             // Generate a unique ID for the patient
             $currentYear = date('Y');
             $latestPatient = Patient::whereYear('created_at', $currentYear)->orderBy('id', 'desc')->first();
             $latestId = $latestPatient ? intval(substr($latestPatient->pat_unique_id, -4)) : 0;
             $newId = str_pad($latestId + 1, 4, '0', STR_PAD_LEFT);
-            $data['pat_unique_id'] = "PAT-{$currentYear}-{$newId}";// Generate a unique ID for the patient
+            $data['pat_unique_id'] = "PAT-{$currentYear}-{$newId}";
         } else {
             return redirect()->back()->withErrors(['error' => 'User not authenticated']);
         }
+
         $patient = Patient::create($data);
+
+        // Log the creation in the audit log
         AuditLog::create([
             'user_id' => auth()->id(),
             'action' => 'create',
             'description' => 'Created a new patient: ' . $patient->full_name,
         ]);
+        
         Log::info('Audit log created for patient creation', ['user_id' => auth()->id(), 'action' => 'create']);
+
+        // Send email to the patient
+        Mail::to($patient->email)->send(new \App\Mail\PatientCreatedMail($patient, $user));
+
+        // Send email to the creator
+        Mail::to($user->email)->send(new \App\Mail\PatientCreatedMail($patient, $user));
+
         return redirect()->route('admin.patient.index')->with('success', 'Patient created successfully.');
     }
 
@@ -148,7 +162,11 @@ class PatientController extends Controller
 
     public function getData(Request $request)
     {
-        $patients = Patient::query();
+        if(Auth::user()->hasRole('Admin')){
+            $patients = Patient::query();
+        } else {
+            $patients = Patient::where('user_unique_id', auth()->id());
+        }
         return DataTables::of($patients)
             ->addColumn('actions', function ($patient) {
                 return view('patient.partials.actions', compact('patient'))->render();

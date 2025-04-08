@@ -45,7 +45,109 @@
         tr:hover {
             background-color: #f1f1f1;
         }
+
+        /* General Table Styling */
+        #medicalVisitsTable {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #medicalVisitsTable th {
+            background-color: #14B8A6; /* Vibrant teal */
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding: 12px;
+            text-transform: uppercase;
+        }
+
+        #medicalVisitsTable td {
+            padding: 10px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Hover Effects */
+        #medicalVisitsTable tbody tr:hover {
+            background-color: #f0fdfa; /* Light teal background */
+            transition: background-color 0.3s ease;
+        }
+
+        #medicalVisitsTable tbody tr:hover td {
+            color: #0f766e; /* Darker teal text */
+            font-weight: bold;
+        }
+
+        /* Search Input Styling */
+        #medicalVisitsTable_filter input {
+            width: 600px !important;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #14B8A6;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #medicalVisitsTable_filter input:focus {
+            border-color: #0f766e; /* Darker teal on focus */
+            box-shadow: 0 0 5px rgba(20, 184, 166, 0.5);
+        }
+
+        /* Button Styling */
+        .btn {
+            background-color: #14B8A6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #0f766e; /* Darker teal */
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Table Header Hover Effect */
+        #medicalVisitsTable th:hover {
+            background-color: #0f766e; /* Darker teal */
+            cursor: pointer;
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background-color: #14B8A6;
+            color: white;
+            border-bottom: none;
+        }
+
+        .modal-footer {
+            border-top: none;
+        }
+
+        .modal-title {
+            font-weight: bold;
+        }
     </style>
+
+    <!-- Add this in your layout or Blade file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
     <!-- Main content -->
     <section class="content">
@@ -99,10 +201,16 @@
                                                         <div class="form-group">
                                                             <label for="visit_date">Visit Date</label>
                                                             <input type="date" name="visit_date" id="visit_date" class="form-control" required>
+                                                            @error('visit_date')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                            @enderror
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="time_slot">Time Slot</label>
                                                             <input type="time" name="time_slot" id="time_slot" class="form-control" required>
+                                                            @error('time_slot')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                            @enderror
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="doctor_id">Doctor</label>
@@ -111,6 +219,9 @@
                                                                 <option value="{{ $doctor->id }}">{{ $doctor->name }}</option>
                                                                 @endforeach
                                                             </select>
+                                                            @error('doctor_id')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                            @enderror
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="nurse_id">Nurse</label>
@@ -119,6 +230,9 @@
                                                                 <option value="{{ $nurse->id }}">{{ $nurse->name }}</option>
                                                                 @endforeach
                                                             </select>
+                                                            @error('nurse_id')
+                                                            <span class="text-danger">{{ $message }}</span>
+                                                            @enderror
                                                         </div>
                                                         <button type="submit" class="btn btn-success mt-2">Approve</button>
                                                     </form>
@@ -249,5 +363,11 @@
             fetchUsersWithRole('nurse', `nurse_id-${visitId}`);
         });
     });
+</script>
+
+<script>
+    @if(session('error'))
+        toastr.error("{{ session('error') }}");
+    @endif
 </script>
 @endsection

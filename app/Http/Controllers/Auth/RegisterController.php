@@ -67,7 +67,15 @@ class RegisterController extends Controller
             'date_of_birth' => ['required', 'date'],
             'phone_number' => ['required', 'string', 'max:15'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => [
+                'required',
+                'confirmed',
+                'string',
+                'min:5', // Minimum 5 characters
+                'regex:/[A-Z]/', // At least one uppercase letter
+                'regex:/[a-z]/', // At least one lowercase letter
+                'regex:/[@#$%&]/', // At least one special character
+            ],
         ]);
     }
 

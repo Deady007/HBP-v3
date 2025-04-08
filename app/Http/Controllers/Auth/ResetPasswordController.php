@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ResetsPasswords;
+use Illuminate\Support\Facades\Validator;
 
 class ResetPasswordController extends Controller
 {
@@ -26,4 +27,25 @@ class ResetPasswordController extends Controller
      * @var string
      */
     protected $redirectTo = '/home';
+
+    /**
+     * Get the password reset validation rules.
+     *
+     * @return array
+     */
+    protected function rules()
+    {
+        return [
+            'email' => 'required|email',
+            'password' => [
+                'required',
+                'confirmed',
+                'string',
+                'min:5', // Minimum 8 characters
+                'regex:/[A-Z]/', // At least one uppercase letter
+                'regex:/[a-z]/', // At least one lowercase letter
+                'regex:/[@#$%&]/', // At least one special character
+            ],
+        ];
+    }
 }

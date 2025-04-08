@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mt-5">
     <h1 class="text-center mb-4 text-primary font-weight-bold">Medical Visits Calendar</h1>
-    
+
     <!-- Filter and Search -->
     <div class="mb-3 d-flex justify-content-between">
         <div>
@@ -174,6 +174,7 @@
                         // Update the event immediately after a successful response
                         info.event.setStart(response.new_date + 'T' + response.new_time);
                         calendar.refetchEvents(); // Fetch updated events without page refresh
+                        
                     },
                     error: function() {
                         info.revert(); // Revert to the original position if AJAX fails
@@ -231,18 +232,18 @@
             //     element.innerHTML = content;
             // }
             eventContent: function(arg) {
-    let customHtml = document.createElement('div');
-    customHtml.classList.add('p-2', 'rounded-lg', 'shadow-md', 'hover:shadow-lg', 'transition-shadow', 'duration-300');
+                let customHtml = document.createElement('div');
+                customHtml.classList.add('p-2', 'rounded-lg', 'shadow-md', 'hover:shadow-lg', 'transition-shadow', 'duration-300');
 
-    if (arg.event.extendedProps.status === 'Approved') {
-        customHtml.classList.add('bg-success', 'text-white');
-    } else if (arg.event.extendedProps.status === 'pending') {
-        customHtml.classList.add('bg-warning', 'text-dark'); // Ensuring black text color
-    } else {
-        customHtml.classList.add('bg-secondary', 'text-white');
-    }
+                if (arg.event.extendedProps.status === 'Approved') {
+                    customHtml.classList.add('bg-success', 'text-white');
+                } else if (arg.event.extendedProps.status === 'pending') {
+                    customHtml.classList.add('bg-warning', 'text-white'); // Ensuring black text color
+                } else {
+                    customHtml.classList.add('bg-secondary', 'text-white');
+                }
 
-    customHtml.innerHTML = `
+                customHtml.innerHTML = `
         <div class="d-flex align-items-center">
             <div class="flex-grow-1">
                 <h5 class="mb-0">${arg.event.title}</h5>
@@ -250,8 +251,10 @@
             </div> 
         </div>
     `;
-    return { domNodes: [customHtml] };
-}
+                return {
+                    domNodes: [customHtml]
+                };
+            }
 
         });
         calendar.render();

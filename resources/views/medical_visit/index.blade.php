@@ -52,6 +52,83 @@
             background-color: #f1f1f1;
         }
 
+        /* General Table Styling */
+        #medical-visits-table {
+            border-collapse: collapse;
+            width: 100%;
+            font-family: 'Arial', sans-serif;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #medical-visits-table th {
+            background-color: #14B8A6; /* Vibrant teal */
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding: 12px;
+            text-transform: uppercase;
+        }
+
+        #medical-visits-table td {
+            padding: 10px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* Hover Effects */
+        #medical-visits-table tbody tr:hover {
+            background-color: #f0fdfa; /* Light teal background */
+            transition: background-color 0.3s ease;
+        }
+
+        #medical-visits-table tbody tr:hover td {
+            color: #0f766e; /* Darker teal text */
+            font-weight: bold;
+        }
+
+        /* Search Input Styling */
+        #medical-visits-table_filter input {
+            width: 600px !important;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #14B8A6;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #medical-visits-table_filter input:focus {
+            border-color: #0f766e; /* Darker teal on focus */
+            box-shadow: 0 0 5px rgba(20, 184, 166, 0.5);
+        }
+
+        /* Button Styling */
+        .btn {
+            background-color: #14B8A6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: #0f766e; /* Darker teal */
+            transform: scale(1.05);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Table Header Hover Effect */
+        #medical-visits-table th:hover {
+            background-color: #0f766e; /* Darker teal */
+            cursor: pointer;
+        }
     </style>
 
     <!-- Main content -->
@@ -93,9 +170,9 @@
                                     <th class="py-2 px-1 text-left text-sm font-medium text-gray-700">Doctor</th>
                                     <th class="py-2 px-1 text-left text-sm font-medium text-gray-700">Nurse</th>
                                     <th class="py-2 px-1 text-left text-sm font-medium text-gray-700">Appointment Status</th>
-                                    @can('medical-visit-update-status')
+                                    
                                     <th class="py-2 px-1 text-left text-sm font-medium text-gray-700">Medical Status</th>
-                                    @endcan
+                                   
                                     <th class="py-2 px-4 text-left text-sm font-medium text-gray-700" width="280px">Action</th>    
                                 </tr>
                             </thead>
@@ -159,32 +236,36 @@
         "dom": '<"top"lfB>rt<"bottom"ip><"clear">',
         "buttons": [
             {
-            extend: 'csvHtml5',
-            text: 'CSV',
-            exportOptions: {
-                columns: [0, 1, 2, 3, 4] // Specify the column indexes you want
-            }
-            },
-            {
-            extend: 'excelHtml5',
-            text: 'Excel',
-            exportOptions: {
-                columns: [0, 1, 2, 3, 4] // Specify the column indexes you want
-            },
-            customize: function (xlsx) {
-                var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                $('row c[r^="C"]', sheet).attr('s', '2'); // Example customization
-            }
-            },
-            {
-            extend: 'pdfHtml5',
-            text: 'PDF',
-            exportOptions: {
-                columns: [0, 1, 2, 3, 4] // Specify the column indexes you want
-            },
-            customize: function (doc) {
-                doc.content[1].table.widths = ['20%', '20%', '15%', '15%', '15%', '15%']; // Adjust column widths if needed
-            }
+            extend: 'collection',
+            text: 'Export Options',
+            className: 'btn btn-success', // Custom class for styling
+            buttons: [
+                {
+                extend: 'copy',
+                text: 'Copy to Clipboard',
+                className: 'btn btn-light'
+                },
+                {
+                extend: 'csv',
+                text: 'Export as CSV',
+                className: 'btn btn-light'
+                },
+                {
+                extend: 'excel',
+                text: 'Export as Excel',
+                className: 'btn btn-light'
+                },
+                {
+                extend: 'pdf',
+                text: 'Export as PDF',
+                className: 'btn btn-light'
+                },
+                {
+                extend: 'print',
+                text: 'Print Table',
+                className: 'btn btn-light'
+                }
+            ]
             }
         ]
     });
