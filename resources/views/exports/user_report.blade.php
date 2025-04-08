@@ -12,12 +12,12 @@
     <tbody>
         @foreach($userVisits as $visit)
         <tr>
-            <td>{{ $visit->visit_date }}</td>
-            <td>{{ $visit->doctor->name ?? 'N/A' }}</td>
-            <td>{{ $visit->primary_complaint ?? 'N/A' }}</td>
-            <td>{{ $visit->diagnosis ?? 'N/A' }}</td>
-            <td>{{ $visit->medications_prescribed ?? 'N/A' }}</td>
-            <td>{{ $visit->is_approved ?? 'N/A' }}</td>
+            <td>{{ $visit['Visit Date'] }}</td>
+            <td>{{ $visit['Doctor Name'] }}</td>
+            <td>{{ $visit['Symptoms Reported'] }}</td>
+            <td>{{ $visit['Diagnosis'] }}</td>
+            <td>{{ $visit['Medications Prescribed'] }}</td>
+            <td>{{ $visit['Ongoing Treatments'] }}</td>
         </tr>
         @endforeach
     </tbody>
