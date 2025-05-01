@@ -37,6 +37,11 @@ RUN chown -R www-data:www-data /var/www \
 
 # Expose port and start php server
 EXPOSE 10000
-
+CMD php artisan key:generate
+CMD php artisan config:cache
+CMD php artisan route:cache
+CMD php artisan view:cache
+CMD php artisan optimize
+CMD php artisan migrate --force
 CMD php artisan serve --host=0.0.0.0 --port=${PORT}
 
