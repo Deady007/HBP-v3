@@ -1,0 +1,5 @@
+http://0.0.0.0:10000 {
+    root * /var/www/public
+    php_fastcgi php:9000
+    file_server
+}
