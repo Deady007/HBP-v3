@@ -23,7 +23,10 @@ RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 storage bootstrap/cache
 
 # Install Caddy (web server)
-RUN curl -fsSL https://get.caddyserver.com | bash -s personal
+# Install Caddy (production static build)
+RUN curl -o /usr/bin/caddy -fsSL "https://github.com/caddyserver/caddy/releases/latest/download/caddy_linux_amd64" \
+  && chmod +x /usr/bin/caddy
+
 
 # Copy Caddy config
 COPY Caddyfile /etc/Caddyfile
