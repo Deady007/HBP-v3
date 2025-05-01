@@ -9,6 +9,7 @@ use App\Http\Controllers\DoctorReportController;
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Artisan;
 
 Route::view('/', 'Homepage.welcome')->name('welcome');
 Route::view('/about-us', 'Homepage.about')->name('about-us');
@@ -105,5 +106,14 @@ Route::get('/service-worker.js', function () {
 
 Route::get('/test-email', [App\Http\Controllers\TestEmailController::class, 'sendTestEmail']);
 Route::post('/password/email', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+
+Route::get('/migrate-now', function () {
+    try {
+        Artisan::call('migrate', ['--force' => true]);
+        return '✅ Migration ran successfully!';
+    } catch (\Exception $e) {
+        return '❌ Error: ' . $e->getMessage();
+    }
+});
 
 
