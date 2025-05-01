@@ -28,24 +28,12 @@ WORKDIR /var/www
 # Copy project files
 COPY . .
 
-# Copy environment file
-COPY .env /var/www/.env
-
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 755 /var/www/storage
-
-RUN chmod 644 /var/www/.env
-
-RUN php artisan key:generate
-RUN php artisan config:cache
-RUN php artisan route:cache
-RUN php artisan view:cache
-RUN php artisan optimize
-
 
 
 # Expose port and start php server
