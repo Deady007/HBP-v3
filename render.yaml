@@ -3,25 +3,29 @@ services:
     name: laravel-app
     env: docker
     plan: free
+    branch: main
+    region: oregon
     dockerfilePath: ./Dockerfile
-    buildCommand: ""
-    startCommand: php artisan serve --host=0.0.0.0 --port=10000
     envVars:
       - key: APP_ENV
         value: production
-      - key: APP_DEBUG
-        value: false
-      - key: APP_URL
-        value: https://laravel-app-ojvb.onrender.com
+      - key: APP_KEY
+        generateValue: true
       - key: DB_CONNECTION
-        value: mysql
-      - key: DB_HOST
-        value: sql12.freesqldatabase.com
+        value: pgsql
       - key: DB_PORT
-        value: 3306
+        value: 5432
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: laravel-db
       - key: DB_DATABASE
-        value: sql12776384
+        value: hbp_13711
       - key: DB_USERNAME
-        value: sql12776384
+        value: hbp_13711_user
       - key: DB_PASSWORD
-        value: lL1Ds68SwJ
+        value: RioInqofLE894ZeZoUYB7eI6QQ1U3HUR
+
+databases:
+  - name: Test User
+    plan: free

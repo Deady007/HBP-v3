@@ -1,36 +1,31 @@
-FROM php:8.3-fpm
+FROM php:8.4-fpm
 
-# Install system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg62-turbo-dev libfreetype6-dev zip git curl unzip \
-    libonig-dev libxml2-dev libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    git curl libpng-dev libonig-dev libxml2-dev zip unzip \
+    libzip-dev libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www
 
-# Copy Laravel app
 COPY . .
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
-# Set permissions
+# Permissions
 RUN chown -R www-data:www-data /var/www \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 755 /var/www/storage
 
-# Install Caddy (web server)
-# Install Caddy (production static build)
-RUN curl -o /usr/bin/caddy -fsSL "https://github.com/caddyserver/caddy/releases/latest/download/caddy_linux_amd64" \
-  && chmod +x /usr/bin/caddy
+# Copy .env.example to .env if it doesn't exist
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
-
-# Copy Caddy config
-COPY Caddyfile /etc/Caddyfile
-
-EXPOSE 10000
-
-CMD ["caddy", "run", "--config", "/etc/Caddyfile"]
+# Run artisan setup commands automatically
+CMD php artisan config:cache && \
+    php artisan key:generate --force && \
+    php artisan migrate --force && \
+    php artisan storage:link && \
+    php artisan serve --host=0.0.0.0 --port=8000
