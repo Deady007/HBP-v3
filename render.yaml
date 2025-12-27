@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: laravel-app
+    env: docker
+    plan: free
+    branch: main
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_PORT
+        value: 5432
+      - key: DB_HOST
+        fromService:
+          type: pserv
+          name: laravel-db
+      - key: DB_DATABASE
+        value: hbp_13711
+      - key: DB_USERNAME
+        value: hbp_13711_user
+      - key: DB_PASSWORD
+        value: RioInqofLE894ZeZoUYB7eI6QQ1U3HUR
+
+databases:
+  - name: Test User
+    plan: free
