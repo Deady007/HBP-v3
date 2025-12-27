@@ -266,14 +266,26 @@ class MedicalVisitController extends Controller
 
     public function getData(Request $request)
     {
-        $query = MedicalVisit::with(['patient', 'doctor', 'nurse'])
-            ->select('medical_visits.*'); // Ensure the table name is correct
+        $user = Auth::user(); // Get the logged-in user
+
+        // Check if the user is an admin
+        if ($user->hasRole('Admin')) {
+            // Admin can see all medical visits
+            $query = MedicalVisit::with(['patient', 'doctor', 'nurse'])
+                ->select('medical_visits.*');
+        } else {
+            // Non-admin users can only see visits they created
+            $query = MedicalVisit::with(['patient', 'doctor', 'nurse'])
+                ->where('created_by', $user->id)
+                ->select('medical_visits.*');
+        }
+
         return DataTables::eloquent($query)
             ->addColumn('action', function ($visit) {
                 return view('medical_visit.action', compact('visit'))->render();
             })
             ->editColumn('is_approved', function ($visit) {
-                return $visit->is_approved === 'Approved' ? 'Approved' : 'pending'; // Correctly map the value
+                return $visit->is_approved === 'Approved' ? 'Approved' : 'Pending';
             })
             ->toJson();
     }
