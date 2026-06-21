@@ -112,7 +112,16 @@
                             Patient Information
                         </div>
                         <div class="card-body">
-                            <form id="patientForm" action="{{ route('admin.patient.store') }}" method="POST">
+                            @if ($errors->any())
+                                <div class="alert alert-danger">
+                                    <ul class="mb-0">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                            <form id="patientForm" action="{{ route('admin.patient.store') }}" method="POST" onsubmit="submitBtn.disabled=true;submitBtn.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Saving...';">
                                 @csrf
                                 <div class="form-group">
                                     <label for="Full_name">Full Name</label>
@@ -203,7 +212,7 @@
                                     </select>
                                 </div>
                                 <input type="hidden" name="full_name" id="full_name">
-                                <button type="submit" class="btn btn-primary">Save</button>
+                                <button type="submit" id="submitBtn" class="btn btn-primary">Save</button>
                             </form>
                         </div>
                     </div>

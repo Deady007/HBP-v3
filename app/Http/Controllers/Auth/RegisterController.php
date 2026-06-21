@@ -46,7 +46,6 @@ class RegisterController extends Controller
         $mailData = [
             'id' => $user->unique_id,
             'email' => $user->email,
-            'password' => $data['password']
         ];
 
         Mail::to($user->email)->send(new RegistrationSuccess($mailData));
@@ -64,17 +63,17 @@ class RegisterController extends Controller
         Log::info('Validator data: ', $data);
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'date_of_birth' => ['required', 'date'],
+            'date_of_birth' => ['required', 'date', 'before:today', 'after:1900-01-01'],
             'phone_number' => ['required', 'string', 'max:15'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => [
                 'required',
                 'confirmed',
                 'string',
-                'min:5', // Minimum 5 characters
-                'regex:/[A-Z]/', // At least one uppercase letter
-                'regex:/[a-z]/', // At least one lowercase letter
-                'regex:/[@#$%&]/', // At least one special character
+                'min:8',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[0-9@#$%&!]/',
             ],
         ]);
     }

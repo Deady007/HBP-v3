@@ -16,7 +16,7 @@
                             </ul>
                         </div>
                     @endif
-                    <form action="{{ route('medical_visit.store') }}" method="POST">
+                    <form action="{{ route('medical_visit.store') }}" method="POST" onsubmit="visitSubmitBtn.disabled=true;visitSubmitBtn.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Submitting...';">
                         @csrf
                         <div class="patient-details mb-4">
                             <h3 class="text-primary font-weight-bold">Patient Information</h3>
@@ -109,7 +109,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button type="submit" id="visitSubmitBtn" class="btn btn-primary">Submit</button>
                         <a href="{{ route('medical_visit.index') }}" class="btn btn-secondary">Back to List</a>
                     </form>
                 </div>

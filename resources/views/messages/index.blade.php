@@ -115,7 +115,7 @@ $(document).ready(function() {
                 deleteMessage(messageId);
             });
         }).fail(function() {
-            alert('Failed to load messages.');
+            toastr.error('Failed to load messages.');
         });
     }
 
@@ -142,7 +142,7 @@ $(document).ready(function() {
             $("#message").val('');
             loadMessages(receiver_id);
         }).fail(function() {
-            alert('Failed to send message.');
+            toastr.error('Failed to send message.');
         });
     }
 
@@ -157,7 +157,7 @@ $(document).ready(function() {
                 loadMessages(receiver_id);
             },
             fail: function() {
-                alert('Failed to delete message.');
+                toastr.error('Failed to delete message.');
             }
         });
     }

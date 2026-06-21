@@ -131,16 +131,18 @@ class PatientController extends Controller
 
     public function profile()
     {
-        $patient = Patient::findOrFail(auth()->guard()->user()->id);
+        $patient = Patient::where('user_unique_id', auth()->id())->firstOrFail();
         return view('patient.profile', compact('patient'));
     }
 
     public function updateProfile(Request $request)
     {
+        $patient = Patient::where('user_unique_id', auth()->id())->firstOrFail();
+
         $request->validate([
-            'date_of_birth' => 'required|date',
+            'date_of_birth' => 'required|date|before:today',
             'phone_number' => 'required|string|max:15',
-            'email' => 'nullable|string|email|max:255,email,' . auth()->guard()->user()->id,
+            'email' => 'nullable|email|max:255|unique:patients,email,' . $patient->id,
             'full_address' => 'required|string',
             'religion' => 'required|string',
             'economic_status' => 'required|string',
@@ -152,8 +154,12 @@ class PatientController extends Controller
             'age_category' => 'required|string',
         ]);
 
-        $patient = Patient::findOrFail(auth()->guard()->user()->id);
-        $patient->update($request->all());
+        $patient->update($request->only([
+            'date_of_birth', 'phone_number', 'email', 'full_address', 'religion',
+            'economic_status', 'bpl_card_number', 'ayushman_card',
+            'emergency_contact_name', 'emergency_contact_phone',
+            'emergency_contact_relationship', 'age_category',
+        ]));
 
         return redirect()->route('patient.profile')->with('success', 'Profile updated successfully.');
     }

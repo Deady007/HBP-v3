@@ -27,10 +27,15 @@ class MessageController extends Controller
 
     public function sendMessage(Request $request)
     {
+        $request->validate([
+            'receiver_id' => 'required|exists:users,id',
+            'message'     => 'required|string|min:1|max:5000',
+        ]);
+
         $message = Message::create([
-            'sender_id' => Auth::id(),
+            'sender_id'   => Auth::id(),
             'receiver_id' => $request->receiver_id,
-            'message' => $request->message
+            'message'     => $request->message,
         ]);
 
         return response()->json($message);

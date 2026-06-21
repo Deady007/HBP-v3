@@ -38,7 +38,13 @@ class MedicalVisitController extends Controller
 
     public function create()
     {
-        $patients = Patient::all();
+        // Scope to user's own patients unless Admin; avoid full-table scan
+        $patients = Auth::user()->hasRole('Admin')
+            ? Patient::select('id', 'full_name', 'pat_unique_id')->orderBy('full_name')->get()
+            : Patient::select('id', 'full_name', 'pat_unique_id')
+                ->where('user_unique_id', Auth::id())
+                ->orderBy('full_name')
+                ->get();
         return view('medical_visit.create', compact('patients'));
     }
 
@@ -85,9 +91,8 @@ class MedicalVisitController extends Controller
 
     public function edit($id)
     {
-        $visit = MedicalVisit::findOrFail($id);
-        $patients = Patient::all();
-        return view('medical_visit.edit', compact('visit', 'patients'));
+        $visit = MedicalVisit::with(['patient', 'doctor', 'nurse'])->findOrFail($id);
+        return view('medical_visit.edit', compact('visit'));
     }
 
     public function update(Request $request, $id)
@@ -111,7 +116,11 @@ class MedicalVisitController extends Controller
         $symptoms = $request->input('symptoms', []);
         $symptomsString = implode(', ', $symptoms);
         $visit = MedicalVisit::findOrFail($id);
-        $visit->update($request->all());
+        $visit->fill($request->only([
+            'diagnosis', 'simplified_diagnosis', 'sugar_level', 'heart_rate',
+            'temperature', 'oxygen_level', 'ongoing_treatments', 'medications_prescribed',
+            'procedures', 'doctor_notes', 'nurse_observations', 'doctor_name', 'nurse_name',
+        ]));
         $visit->symptoms = $symptomsString;
         $visit->is_emergency = $request->appointment_type === 'Emergency Visit';
         $visit->save();
@@ -173,6 +182,26 @@ class MedicalVisitController extends Controller
     return redirect()->route('request_for_visit.index')->with('success', 'Medical visit approved successfully.');
 }
 
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'rejection_reason' => 'nullable|string|max:500',
+        ]);
+
+        $medicalVisit = MedicalVisit::findOrFail($id);
+        $medicalVisit->is_approved = 'Rejected';
+        $medicalVisit->doctor_notes = $request->input('rejection_reason', '');
+        $medicalVisit->save();
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'reject',
+            'description' => 'Rejected medical visit for patient: ' . $medicalVisit->patient->full_name,
+        ]);
+
+        return redirect()->route('request_for_visit.index')->with('success', 'Medical visit rejected.');
+    }
+
     public function updateStatus(Request $request, $id)
     {
         $visit = MedicalVisit::findOrFail($id);
@@ -217,8 +246,8 @@ class MedicalVisitController extends Controller
                 // 'title' => $visit->patient->full_name . ' - ' . $visit->patient->full_address
                 'start' => $visit->visit_date ?? $visit->preferred_visit_date,
                 'status' => $visit->is_approved,
-                'backgroundColor' => $visit->is_approved === 'Approved' ? 'green' : ($visit->is_approved === 'pending' ? 'orange' : 'yellow'),
-                'borderColor' => $visit->is_approved === 'Approved' ? 'green' : ($visit->is_approved === 'pending' ? 'orange' : 'yellow')
+                'backgroundColor' => in_array($visit->is_approved, ['Approved', 'Emergency Approved']) ? 'green' : ($visit->is_approved === 'Rejected' ? 'red' : 'orange'),
+                'borderColor' => in_array($visit->is_approved, ['Approved', 'Emergency Approved']) ? 'green' : ($visit->is_approved === 'Rejected' ? 'red' : 'orange')
             ];
         });
 

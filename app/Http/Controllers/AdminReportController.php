@@ -29,10 +29,10 @@ class AdminReportController extends Controller
         $dateRange = $request->input('date_range', 'monthly');
         $visitSelection = $request->input('visit_selection', 'all');
 
-        $totalPatients = Patient::count();
+        $totalPatients = Patient::withoutTrashed()->count();
         $totalVisits = MedicalVisit::count();
-        $approvedVisits = MedicalVisit::where('is_approved', 'Approved')->count();
-        $pendingVisits = MedicalVisit::where('is_approved', 'Pending')->count();
+        $approvedVisits = MedicalVisit::whereIn('is_approved', ['Approved', 'Emergency Approved'])->count();
+        $pendingVisits = MedicalVisit::where('is_approved', 'pending')->count();
         $emergencyCases = MedicalVisit::where('is_emergency', true)->count();
 
         $startDate = $request->input('start_date');
@@ -44,13 +44,14 @@ class AdminReportController extends Controller
         }
         $appointments = $query->orderBy('visit_date', 'asc')->get();
 
-        $doctorPerformance = User::role('Doctor')->get()->map(function ($doctor) {
-            $doctor->patients_seen = MedicalVisit::where('doctor_id', $doctor->id)->count();
-            $doctor->pending_visits = MedicalVisit::where('doctor_id', $doctor->id)->where('medical_status', 'pending')->count();
-            $doctor->completed_visits = MedicalVisit::where('doctor_id', $doctor->id)->where('medical_status', 'Completed')->count();
-            $doctor->emergency_visits = MedicalVisit::where('doctor_id', $doctor->id)->where('is_emergency', true)->count();
-            return $doctor;
-        });
+        $doctorPerformance = User::role('Doctor')
+            ->withCount([
+                'medicalVisits as patients_seen',
+                'medicalVisits as pending_visits' => fn($q) => $q->where('medical_status', 'pending'),
+                'medicalVisits as completed_visits' => fn($q) => $q->where('medical_status', 'Completed'),
+                'medicalVisits as emergency_visits' => fn($q) => $q->where('is_emergency', true),
+            ])
+            ->get();
 
         // Additional data for the new sections
         $malePatients = Patient::where('gender', 'Male')->count();
@@ -123,11 +124,10 @@ class AdminReportController extends Controller
 
     private function generateReportData($startDate, $endDate)
     {
-        // Fetch the data for the report
-        $totalPatients = Patient::count();
+        $totalPatients = Patient::withoutTrashed()->count();
         $totalVisits = MedicalVisit::count();
-        $approvedVisits = MedicalVisit::where('is_approved', 'Approved')->count();
-        $pendingVisits = MedicalVisit::where('is_approved', 'Pending')->count();
+        $approvedVisits = MedicalVisit::whereIn('is_approved', ['Approved', 'Emergency Approved'])->count();
+        $pendingVisits = MedicalVisit::where('is_approved', 'pending')->count();
         $emergencyCases = MedicalVisit::where('is_emergency', true)->count();
 
         $query = MedicalVisit::with(['patient', 'doctor']);
@@ -136,13 +136,14 @@ class AdminReportController extends Controller
         }
         $appointments = $query->orderBy('visit_date', 'asc')->get();
 
-        $doctorPerformance = User::role('Doctor')->get()->map(function ($doctor) {
-            $doctor->patients_seen = MedicalVisit::where('doctor_id', $doctor->id)->count();
-            $doctor->pending_visits = MedicalVisit::where('doctor_id', $doctor->id)->where('medical_status', 'pending')->count();
-            $doctor->completed_visits = MedicalVisit::where('doctor_id', $doctor->id)->where('medical_status', 'Completed')->count();
-            $doctor->emergency_visits = MedicalVisit::where('doctor_id', $doctor->id)->where('is_emergency', true)->count();
-            return $doctor;
-        });
+        $doctorPerformance = User::role('Doctor')
+            ->withCount([
+                'medicalVisits as patients_seen',
+                'medicalVisits as pending_visits' => fn($q) => $q->where('medical_status', 'pending'),
+                'medicalVisits as completed_visits' => fn($q) => $q->where('medical_status', 'Completed'),
+                'medicalVisits as emergency_visits' => fn($q) => $q->where('is_emergency', true),
+            ])
+            ->get();
 
         $malePatients = Patient::where('gender', 'Male')->count();
         $femalePatients = Patient::where('gender', 'Female')->count();

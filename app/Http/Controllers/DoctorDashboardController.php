@@ -16,16 +16,10 @@ class DoctorDashboardController extends Controller
         $user = Auth::user();
         $totalMedicalVisits = MedicalVisit::count();
 
-        if (!MedicalVisit::where('doctor_id', $user->id)->exists()) {
-            $todaysAppointments = MedicalVisit::whereDate('visit_date', Carbon::today())
-            ->where('is_approved', 'approved')
+        $todaysAppointments = MedicalVisit::where('doctor_id', $user->id)
+            ->whereDate('visit_date', Carbon::today())
+            ->whereIn('is_approved', ['Approved', 'Emergency Approved'])
             ->get();
-        } else {
-            $todaysAppointments = MedicalVisit::where('doctor_id', $user->id)
-                ->whereDate('visit_date', Carbon::today())
-                ->where('is_approved', 'approved')
-                ->get();
-        }
 
         $visitData = [
             'pending' => MedicalVisit::where('medical_status', 'pending')->count(),

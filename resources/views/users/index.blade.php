@@ -112,6 +112,7 @@
         document.querySelectorAll('.delete-user').forEach(button => {
             button.addEventListener('click', function() {
                 const userId = this.getAttribute('data-id');
+                if (!confirm('Are you sure you want to delete this user?')) return;
                 fetch(`/users/${userId}`, {
                         method: 'DELETE',
                         headers: {
@@ -124,7 +125,7 @@
                         if (data.success) {
                             document.getElementById(`user-row-${userId}`).remove();
                         } else {
-                            alert('Error deleting user');
+                            toastr.error('Error deleting user. Please try again.');
                         }
                     });
             });

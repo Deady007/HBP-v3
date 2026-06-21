@@ -12,7 +12,7 @@ class PdfService
         $options = new Options();
         $options->set('defaultFont', 'Helvetica');
         $options->set('isHtml5ParserEnabled', true);
-        $options->set('isRemoteEnabled', true);
+        $options->set('isRemoteEnabled', false);
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml($html);
