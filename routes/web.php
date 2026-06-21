@@ -9,7 +9,6 @@ use App\Http\Controllers\DoctorReportController;
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\MessageController;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Artisan;
 
 Route::view('/', 'Homepage.welcome')->name('welcome');
 Route::view('/about-us', 'Homepage.about')->name('about-us');
@@ -69,25 +68,26 @@ Route::prefix('patient')->name('patient.')->middleware(['auth'])->group(function
     Route::get('data', [PatientController::class, 'getData'])->name('patient.data'); // Ensure this line is correct
 });
 
-// API Route
-Route::get('/api/users-with-role/{role}', [UserController::class, 'getUsersWithRole']);
-Route::get('/api/users-with-role/{role}', [RequestForVisitController::class, 'fetchUsersWithRole']);
+// API Route (auth required — no duplicate)
+Route::middleware(['auth'])->get('/api/users-with-role/{role}', [UserController::class, 'getUsersWithRole']);
 
-// Report Routes
-Route::get('/doctor/report/{doctorId}', [DoctorReportController::class, 'generateReport'])->name('doctor.report');
-Route::get('/user/report', [UserReportController::class, 'generateReport'])->name('reports.user');
-Route::get('/reports/admin', [AdminReportController::class, 'generateReport'])->name('reports.admin');
-Route::get('/reports/export', [UserReportController::class, 'exportReport'])->name('reports.export');
-Route::get('/reports/export/csv', [UserReportController::class, 'exportReportCsv'])->name('reports.export.csv');
-Route::get('/doctor-report/export/{doctorId}', [DoctorReportController::class, 'exportReport'])->name('doctor.report.export');
-Route::get('/doctor-report/export', [DoctorReportController::class, 'exportLoggedInDoctorReport'])->name('doctor.report.export.loggedin');
-Route::get('/admin-report/export', [AdminReportController::class, 'exportAdminReport'])->name('admin.report.export');
-Route::get('/admin-report/export/csv', [AdminReportController::class, 'exportAdminReportCsv'])->name('admin.report.export.csv');
-Route::get('/doctor-report/export/csv/{doctorId}', [DoctorReportController::class, 'exportReportCsv'])->name('doctor.report.export.csv');
-Route::get('/doctor-report/export/csv', [DoctorReportController::class, 'exportLoggedInDoctorReportCsv'])->name('doctor.report.export.loggedin.csv');
-Route::get('/admin-report/export/pdf', [AdminReportController::class, 'exportAdminReportPdf'])->name('admin.report.export.pdf');
-Route::get('/doctor-report/export/pdf/{doctorId}', [DoctorReportController::class, 'exportReportPdf'])->name('doctor.report.export.pdf');
-Route::get('/user-report/export/pdf', [UserReportController::class, 'exportReportPdf'])->name('reports.export.pdf');
+// Report Routes (auth required)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/doctor/report/{doctorId}', [DoctorReportController::class, 'generateReport'])->name('doctor.report');
+    Route::get('/user/report', [UserReportController::class, 'generateReport'])->name('reports.user');
+    Route::get('/reports/admin', [AdminReportController::class, 'generateReport'])->name('reports.admin');
+    Route::get('/reports/export', [UserReportController::class, 'exportReport'])->name('reports.export');
+    Route::get('/reports/export/csv', [UserReportController::class, 'exportReportCsv'])->name('reports.export.csv');
+    Route::get('/doctor-report/export/{doctorId}', [DoctorReportController::class, 'exportReport'])->name('doctor.report.export');
+    Route::get('/doctor-report/export', [DoctorReportController::class, 'exportLoggedInDoctorReport'])->name('doctor.report.export.loggedin');
+    Route::get('/admin-report/export', [AdminReportController::class, 'exportAdminReport'])->name('admin.report.export');
+    Route::get('/admin-report/export/csv', [AdminReportController::class, 'exportAdminReportCsv'])->name('admin.report.export.csv');
+    Route::get('/doctor-report/export/csv/{doctorId}', [DoctorReportController::class, 'exportReportCsv'])->name('doctor.report.export.csv');
+    Route::get('/doctor-report/export/csv', [DoctorReportController::class, 'exportLoggedInDoctorReportCsv'])->name('doctor.report.export.loggedin.csv');
+    Route::get('/admin-report/export/pdf', [AdminReportController::class, 'exportAdminReportPdf'])->name('admin.report.export.pdf');
+    Route::get('/doctor-report/export/pdf/{doctorId}', [DoctorReportController::class, 'exportReportPdf'])->name('doctor.report.export.pdf');
+    Route::get('/user-report/export/pdf', [UserReportController::class, 'exportReportPdf'])->name('reports.export.pdf');
+});
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/messages', [MessageController::class, 'index'])->name('messages');
@@ -104,16 +104,6 @@ Route::get('/service-worker.js', function () {
     return response()->file(public_path('service-worker.js'));
 })->name('service-worker');
 
-Route::get('/test-email', [App\Http\Controllers\TestEmailController::class, 'sendTestEmail']);
 Route::post('/password/email', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-
-Route::get('/migrate-now', function () {
-    try {
-        Artisan::call('migrate', ['--force' => true]);
-        return '✅ Migration ran successfully!';
-    } catch (\Exception $e) {
-        return '❌ Error: ' . $e->getMessage();
-    }
-});
 
 

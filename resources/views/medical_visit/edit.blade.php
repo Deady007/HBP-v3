@@ -40,7 +40,7 @@
                             <div class="form-group">
                                 <label for="time_slot" style="font-size: 1.1rem;">Time Slot</label>
                                 <select name="time_slot" id="time_slot" class="form-control" disabled style="font-size: 1.1rem;">
-                                    <option value="$visit->time_slot">{{ $visit->time_slot}}</option>
+                                    <option value="{{ $visit->time_slot }}">{{ $visit->time_slot }}</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -50,7 +50,7 @@
                             <div class="form-group">
                                 <label for="preferred_time_slot" style="font-size: 1.1rem;">Preferred Time Slot</label>
                                 <select name="preferred_time_slot" id="preferred_time_slot" class="form-control" disabled style="font-size: 1.1rem;">
-                                    <option value="$visit->preferred_time_slot">{{ $visit->preferred_time_slot}}</option>
+                                    <option value="{{ $visit->preferred_time_slot }}">{{ $visit->preferred_time_slot }}</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -62,8 +62,7 @@
                             <div class="form-group">
                                 <label for="nurse_name" style="font-size: 1.1rem;">Nurse</label>
                                 <select name="nurse_name" id="nurse_name" class="form-control" style="font-size: 1.1rem;" readonly>
-                                    <option value="{{  $visit->nurse->name }}" selected>{{ $visit->nurse->name }}</option>
-                                </select>
+                                    <option value="{{ $visit->nurse->name }}" selected>{{ $visit->nurse->name }}</option>
                                 </select>
                             </div>
                             <div class="form-group">

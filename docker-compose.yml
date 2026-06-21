@@ -1,0 +1,52 @@
+services:
+  app:
+    build: .
+    container_name: hbp_app
+    restart: unless-stopped
+    env_file: .env.docker
+    environment:
+      DB_HOST: db
+    ports:
+      - "8000:8000"
+    volumes:
+      - storage_data:/var/www/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - hbp_net
+
+  db:
+    image: postgres:16-alpine
+    container_name: hbp_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hbp_db
+      POSTGRES_USER: hbp_user
+      POSTGRES_PASSWORD: hbp_secret
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hbp_user -d hbp_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hbp_net
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --url http://app:8000 --no-autoupdate
+    depends_on:
+      - app
+    networks:
+      - hbp_net
+
+networks:
+  hbp_net:
+    driver: bridge
+
+volumes:
+  db_data:
+  storage_data:

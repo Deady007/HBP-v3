@@ -161,7 +161,7 @@
                 var today = new Date();
                 var newDate = new Date(formData.visit_date);
                 if (newDate <= today) {
-                    alert('The visit date must be after today.');
+                    toastr.warning('The visit date must be after today.');
                     info.revert(); // Revert to the original position
                     return;
                 }
@@ -304,9 +304,9 @@
                         for (var field in errors) {
                             errorMessage += errors[field].join(', ') + '\n';
                         }
-                        alert('Validation error:\n' + errorMessage);
+                        toastr.error('Validation error: ' + errorMessage);
                     } else {
-                        alert('An error occurred while saving the visit.');
+                        toastr.error('An error occurred while saving the visit.');
                     }
                 }
             });

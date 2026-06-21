@@ -187,29 +187,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        $('#medical-visits-table').DataTable({
-            "processing": true,
-            "serverSide": true,
-            "ajax": {
-                "url": "{{ route('medical_visits.data') }}",
-                "type": "GET"
-            },
-            "columns": [
-                { "data": "patient.pat_unique_id" },
-                { "data": "patient.full_name" },
-                { "data": "visit_date" },
-                { "data": "doctor.name" },
-                { "data": "nurse.name" },
-                { "data": "is_approved" }, // Ensure this column is mapped correctly
-                { "data": "medical_status" },
-                { "data": "action", "orderable": false, "searchable": false }
-            ]
-        });
-    });
-</script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
     var table = $('#medical-visits-table').DataTable({
         "processing": true,
         "serverSide": true,
@@ -288,6 +265,7 @@
     document.querySelectorAll('.delete-visit').forEach(button => {
         button.addEventListener('click', function() {
             const visitId = this.getAttribute('data-id');
+            if (!confirm('Are you sure you want to delete this visit? This cannot be undone.')) return;
             fetch(`/medical_visits/${visitId}`, {
                     method: 'DELETE',
                     headers: {
@@ -299,8 +277,10 @@
                 .then(data => {
                     if (data.success) {
                         document.getElementById(`visit-row-${visitId}`).remove();
+                        table.ajax.reload();
+                        toastr.success('Visit deleted successfully.');
                     } else {
-                        alert('Error deleting visit');
+                        toastr.error('Error deleting visit. Please try again.');
                     }
                 });
         });
@@ -309,6 +289,7 @@
     document.querySelectorAll('.delete-patient').forEach(button => {
         button.addEventListener('click', function() {
             const patientId = this.getAttribute('data-id');
+            if (!confirm('Are you sure you want to delete this patient?')) return;
             fetch(`/patients/${patientId}`, {
                     method: 'DELETE',
                     headers: {
@@ -320,8 +301,9 @@
                 .then(data => {
                     if (data.success) {
                         document.querySelectorAll(`[data-patient-id="${patientId}"]`).forEach(row => row.remove());
+                        toastr.success('Patient deleted successfully.');
                     } else {
-                        alert('Error deleting patient');
+                        toastr.error('Error deleting patient. Please try again.');
                     }
                 });
         });
@@ -342,31 +324,19 @@
             var startDate = $('#start-date').val();
             var endDate = $('#end-date').val();
             var selectedDoctor = $('#doctor-select').val();
-            console.log('Filter button clicked');
-            console.log('Start Date:', startDate);
-            console.log('End Date:', endDate);
-            console.log('Selected Doctor:', selectedDoctor);
-            $.fn.dataTable.ext.search = []; // Clear any existing filters
-            if (startDate || endDate || selectedDoctor) {   
-                $.fn.dataTable.ext.search.push(
-                    function(settings, data, dataIndex) {
-                        var visitDate = new Date(data[2]); // Use the correct column index for visit date
-                        var start = startDate ? new Date(startDate) : null;
-                        var end = endDate ? new Date(endDate) : null;
-                        var doctor = data[3]; // Use the correct column index for doctor
-                        console.log('Visit Date:', visitDate);
-                        if ((start && visitDate < start) || (end && visitDate > end)) {
-                            return false;
-                        }
-                        if (selectedDoctor && doctor !== selectedDoctor) {
-                            return false;
-                        }
-                        return true;
-                    }
-                );
+            $.fn.dataTable.ext.search = [];
+            if (startDate || endDate || selectedDoctor) {
+                $.fn.dataTable.ext.search.push(function(settings, data) {
+                    var visitDate = new Date(data[2]);
+                    var start = startDate ? new Date(startDate) : null;
+                    var end = endDate ? new Date(endDate) : null;
+                    var doctor = data[3];
+                    if ((start && visitDate < start) || (end && visitDate > end)) return false;
+                    if (selectedDoctor && doctor !== selectedDoctor) return false;
+                    return true;
+                });
             }
-            table.draw(); // Trigger the draw event to show filtered entries
-            console.log('Table redrawn');
+            table.draw();
         });
     });
 </script>
